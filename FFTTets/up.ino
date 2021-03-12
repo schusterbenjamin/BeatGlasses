@@ -1,20 +1,37 @@
 #include <arduinoFFT.h>
 
+//FFT-MODE
 #define SAMPLES 64         // Must be a power of 2
 #define SAMPLING_FREQ 4300 // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AMPLITUDE 100      // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200          // Used as a crude noise filter, values below this are ignored
+#define FFT_THRESHOLD 500
 
-#define THRESHOLD 500
+//Envelope-Mode
+#define ENV_THRESHOLD 350
+#define NUM_VALS 150
 
+//Microphone pins
 #define AUDIO_IN_PIN A5 // Signal in on this pin
 #define ENVELOPE_IN_PIN A6
 #define GATE_IN_PIN A7
 
+//LED pins
 #define LED_RED 2
 #define LED_GREEN 3
 #define LED_BLUE 4
+
+//Modes
+#define FFT_MODE 0
+#define ENVELOPE_MODE 1
+#define TICK_MODE 2
+#define FADE_MODE 3
+
+int mode = 1;
+
+//Debug mode
+#define VERBOSE 1
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
@@ -33,20 +50,45 @@ void setup()
 
 void loop()
 {
-    // Serial.print("[");
+
+    switch (mode)
+    {
+    case 0:
+        fft();
+        break;
+    case 1:
+        envelope();
+        break;
+    case 2:
+        tick();
+        break;
+    case 3:
+        fade();
+        break;
+    }
+}
+
+void fft()
+{
+
+    if (VERBOSE)
+        Serial.print("[");
     // Reset bandValues[]
     for (int i = 0; i < NUM_BANDS; i++)
     {
-        // if (i != NUM_BANDS - 1)
-        // {
-        //     Serial.print(bandValues[i]);
-        //     Serial.print(", ");
-        // }
-        // else
-        // {
-        //     Serial.print(bandValues[i]);
-        //     Serial.println("]");
-        // }
+        if (VERBOSE)
+        {
+            if (i != NUM_BANDS - 1)
+            {
+                Serial.print(bandValues[i]);
+                Serial.print(", ");
+            }
+            else
+            {
+                Serial.print(bandValues[i]);
+                Serial.println("]");
+            }
+        }
 
         bandValues[i] = 0;
     }
@@ -128,7 +170,7 @@ void loop()
         }
     }
 
-    if (bandValues[0] > THRESHOLD)
+    if (bandValues[0] > FFT_THRESHOLD)
     {
         setColor(0, 100, 0);
     }
@@ -136,6 +178,32 @@ void loop()
     {
         setColor(0, 5, 0);
     }
+}
+
+void envelope()
+{
+    int avg = 0;
+
+    for (int i = 0; i < NUM_VALS; i++)
+    {
+        avg += analogRead(ENVELOPE_IN_PIN);
+    }
+    avg /= NUM_VALS;
+
+    if (VERBOSE)
+        Serial.println(avg);
+
+    if (avg > ENV_THRESHOLD)
+        setColor(0, 160, 0);
+    else
+        setColor(0, 6, 0);
+}
+
+void tick()
+{
+}
+void fade()
+{
 }
 
 void setColor(int r, int g, int b)
