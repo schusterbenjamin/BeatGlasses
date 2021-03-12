@@ -3,14 +3,18 @@
 #define SAMPLES 64         // Must be a power of 2
 #define SAMPLING_FREQ 4300 // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AMPLITUDE 100      // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
-#define AUDIO_IN_PIN A0    // Signal in on this pin
-#define MAX_MILLIAMPS 2000 // Careful with the amount of power here if running off USB port
-#define LED_VOLTS 5        // Usually 5 or 12
-#define NUM_BANDS 16       // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
-#define NOISE 50           // Used as a crude noise filter, values below this are ignored
+#define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
+#define NOISE 200          // Used as a crude noise filter, values below this are ignored
 
-#define LED 2
 #define THRESHOLD 500
+
+#define AUDIO_IN_PIN A5 // Signal in on this pin
+#define ENVELOPE_IN_PIN A6
+#define GATE_IN_PIN A7
+
+#define LED_RED 2
+#define LED_GREEN 3
+#define LED_BLUE 4
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
@@ -23,16 +27,27 @@ arduinoFFT FFT = arduinoFFT(vReal, vImag, SAMPLES, SAMPLING_FREQ);
 
 void setup()
 {
-    pinMode(LED, OUTPUT);
     Serial.begin(9600);
     sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQ));
 }
 
 void loop()
 {
+    // Serial.print("[");
     // Reset bandValues[]
     for (int i = 0; i < NUM_BANDS; i++)
     {
+        // if (i != NUM_BANDS - 1)
+        // {
+        //     Serial.print(bandValues[i]);
+        //     Serial.print(", ");
+        // }
+        // else
+        // {
+        //     Serial.print(bandValues[i]);
+        //     Serial.println("]");
+        // }
+
         bandValues[i] = 0;
     }
 
@@ -59,58 +74,73 @@ void loop()
         if (vReal[i] > NOISE)
         { // Add a crude noise filter
 
-            /*8 bands, 12kHz top band
-      if (i<=3 )           bandValues[0]  += (int)vReal[i];
-      if (i>3   && i<=6  ) bandValues[1]  += (int)vReal[i];
-      if (i>6   && i<=13 ) bandValues[2]  += (int)vReal[i];
-      if (i>13  && i<=27 ) bandValues[3]  += (int)vReal[i];
-      if (i>27  && i<=55 ) bandValues[4]  += (int)vReal[i];
-      if (i>55  && i<=112) bandValues[5]  += (int)vReal[i];
-      if (i>112 && i<=229) bandValues[6]  += (int)vReal[i];
-      if (i>229          ) bandValues[7]  += (int)vReal[i];*/
+            //8 bands, 12kHz top band
+            if (i <= 3)
+                bandValues[0] += (int)vReal[i];
+            if (i > 3 && i <= 6)
+                bandValues[1] += (int)vReal[i];
+            if (i > 6 && i <= 13)
+                bandValues[2] += (int)vReal[i];
+            if (i > 13 && i <= 27)
+                bandValues[3] += (int)vReal[i];
+            if (i > 27 && i <= 55)
+                bandValues[4] += (int)vReal[i];
+            if (i > 55 && i <= 112)
+                bandValues[5] += (int)vReal[i];
+            if (i > 112 && i <= 229)
+                bandValues[6] += (int)vReal[i];
+            if (i > 229)
+                bandValues[7] += (int)vReal[i];
 
             //16 bands, 12kHz top band
-            if (i <= 2)
-                bandValues[0] += (int)vReal[i];
-            if (i > 2 && i <= 3)
-                bandValues[1] += (int)vReal[i];
-            if (i > 3 && i <= 5)
-                bandValues[2] += (int)vReal[i];
-            if (i > 5 && i <= 7)
-                bandValues[3] += (int)vReal[i];
-            if (i > 7 && i <= 9)
-                bandValues[4] += (int)vReal[i];
-            if (i > 9 && i <= 13)
-                bandValues[5] += (int)vReal[i];
-            if (i > 13 && i <= 18)
-                bandValues[6] += (int)vReal[i];
-            if (i > 18 && i <= 25)
-                bandValues[7] += (int)vReal[i];
-            if (i > 25 && i <= 36)
-                bandValues[8] += (int)vReal[i];
-            if (i > 36 && i <= 50)
-                bandValues[9] += (int)vReal[i];
-            if (i > 50 && i <= 69)
-                bandValues[10] += (int)vReal[i];
-            if (i > 69 && i <= 97)
-                bandValues[11] += (int)vReal[i];
-            if (i > 97 && i <= 135)
-                bandValues[12] += (int)vReal[i];
-            if (i > 135 && i <= 189)
-                bandValues[13] += (int)vReal[i];
-            if (i > 189 && i <= 264)
-                bandValues[14] += (int)vReal[i];
-            if (i > 264)
-                bandValues[15] += (int)vReal[i];
+            // if (i <= 2)
+            //     bandValues[0] += (int)vReal[i];
+            // if (i > 2 && i <= 3)
+            //     bandValues[1] += (int)vReal[i];
+            // if (i > 3 && i <= 5)
+            //     bandValues[2] += (int)vReal[i];
+            // if (i > 5 && i <= 7)
+            //     bandValues[3] += (int)vReal[i];
+            // if (i > 7 && i <= 9)
+            //     bandValues[4] += (int)vReal[i];
+            // if (i > 9 && i <= 13)
+            //     bandValues[5] += (int)vReal[i];
+            // if (i > 13 && i <= 18)
+            //     bandValues[6] += (int)vReal[i];
+            // if (i > 18 && i <= 25)
+            //     bandValues[7] += (int)vReal[i];
+            // if (i > 25 && i <= 36)
+            //     bandValues[8] += (int)vReal[i];
+            // if (i > 36 && i <= 50)
+            //     bandValues[9] += (int)vReal[i];
+            // if (i > 50 && i <= 69)
+            //     bandValues[10] += (int)vReal[i];
+            // if (i > 69 && i <= 97)
+            //     bandValues[11] += (int)vReal[i];
+            // if (i > 97 && i <= 135)
+            //     bandValues[12] += (int)vReal[i];
+            // if (i > 135 && i <= 189)
+            //     bandValues[13] += (int)vReal[i];
+            // if (i > 189 && i <= 264)
+            //     bandValues[14] += (int)vReal[i];
+            // if (i > 264)
+            //     bandValues[15] += (int)vReal[i];
         }
     }
 
     if (bandValues[0] > THRESHOLD)
     {
-        digitalWrite(LED, HIGH);
+        setColor(0, 100, 0);
     }
     else
     {
-        digitalWrite(LED, LOW);
+        setColor(0, 5, 0);
     }
+}
+
+void setColor(int r, int g, int b)
+{
+    analogWrite(LED_RED, 255 - r);
+    analogWrite(LED_GREEN, 255 - g);
+    analogWrite(LED_BLUE, 255 - b);
 }
