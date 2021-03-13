@@ -5,8 +5,8 @@
 #define SAMPLING_FREQ 4300 // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AMPLITUDE 100      // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
-#define NOISE 400          // Used as a crude noise filter, values below this are ignored
-#define FFT_THRESHOLD 500
+#define NOISE 200          // Used as a crude noise filter, values below this are ignored
+#define FFT_THRESHOLD 650
 
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
@@ -17,10 +17,22 @@ const int ENV_THRESHOLD = 50;
 #define ENVELOPE_IN_PIN A6
 #define GATE_IN_PIN A7
 
-//LED pins
+//LED stuff
 #define LED_RED 3
 #define LED_GREEN 5
 #define LED_BLUE 6
+
+#define MIN_COLOR_VALUE 1
+#define MAX_COLOR_VALUE 255
+#define MAX_COLOR_INPUT 6000
+#define COLOR_DIMMING 0.3
+
+#define MIN_BRIGHTNESS_VALUE 0.02
+#define MAX_BRIGHTNESS_VALUE 1
+#define BRIGHTNESS_DIMMING 0.4
+
+//brightness shall allways be between MIN_BRIGHTNESS_VALUE and MAX_BRIGHTNESS_VALUE;
+double brightness = MIN_BRIGHTNESS_VALUE;
 
 //Modes
 #define FFT_MODE 0
@@ -46,15 +58,13 @@ void fft();
 void tick();
 void envelope();
 void fade();
-int getBands();
+void makeBands();
 
 void setup()
 {
     Serial.begin(115200);
     sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQ));
 }
-
-int brightness = 255;
 
 void loop()
 {
@@ -77,18 +87,17 @@ void loop()
 
 void fft()
 {
-    if (getBands(NULL))
-    {
-        Serial.println("Error in fft()");
-    }
+    makeBands();
 
-    if (bandValues[0] > FFT_THRESHOLD)
+    int val = bandValues[0];
+
+    if (val > FFT_THRESHOLD)
     {
-        setColor(0, 0, 220);
+        setColorAndBrightness(0, 0, 255, MAX_BRIGHTNESS_VALUE);
     }
     else
     {
-        setColor(0, 5, 7);
+        setColorAndBrightness(0, 0, 255, NULL);
     }
 }
 
@@ -105,10 +114,10 @@ void envelope()
     if (VERBOSE)
         Serial.println(avg);
 
-    if (avg > ENV_THRESHOLD)
-        setColor(0, 160, 0);
-    else
-        setColor(0, 6, 0);
+    // if (avg > ENV_THRESHOLD)
+    //     setColor(0, 160, 0);
+    // else
+    //     setColor(0, 6, 0);
 }
 
 void tick()
@@ -118,13 +127,11 @@ void fade()
 {
 }
 
-//bV is array in which the bandValues are stored
-//avgEnv is the average of the envelope input of taking SAMPLES times the an input value
-int getBands(int *avgEnv)
+void makeBands()
 {
     if (VERBOSE)
         Serial.print("[");
-    // Reset bandValues[]
+    //Reset bandValues[]
     for (int i = 0; i < NUM_BANDS; i++)
     {
         if (VERBOSE)
@@ -203,7 +210,7 @@ int getBands(int *avgEnv)
                     bandValues[5] += (int)vReal[i];
                 if (i > 13 && i <= 18)
                     bandValues[6] += (int)vReal[i];
-                if (i > 18 && i <= 25)
+                if (i > 18 && i <= MAX_BRIGHTNESS_VALUE)
                     bandValues[7] += (int)vReal[i];
                 if (i > 25 && i <= 36)
                     bandValues[8] += (int)vReal[i];
@@ -222,18 +229,24 @@ int getBands(int *avgEnv)
                 if (i > 264)
                     bandValues[15] += (int)vReal[i];
             }
-            else
-            {
-                return -1;
-            }
         }
     }
-    return 0;
 }
 
-void setColor(int r, int g, int b)
+void setColorAndBrightness(int r, int g, int b, int bn)
 {
-    analogWrite(LED_RED, 255 - r);
-    analogWrite(LED_GREEN, 255 - g);
-    analogWrite(LED_BLUE, 255 - b);
+    if (bn != NULL)
+    {
+        brightness = bn;
+    }
+    else
+    {
+        brightness -= BRIGHTNESS_DIMMING;
+        if (brightness < MIN_BRIGHTNESS_VALUE)
+            brightness = MIN_BRIGHTNESS_VALUE;
+    }
+
+    analogWrite(LED_RED, (int)(255 - (r * brightness)));
+    analogWrite(LED_GREEN, (int)(255 - (g * brightness)));
+    analogWrite(LED_BLUE, (int)(255 - (b * brightness)));
 }
