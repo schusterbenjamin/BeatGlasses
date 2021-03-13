@@ -28,7 +28,7 @@ const int ENV_THRESHOLD = 50;
 #define TICK_MODE 2
 #define FADE_MODE 3
 
-int mode = 0;
+int mode = FFT_MODE;
 
 //Debug mode
 #define VERBOSE 1
@@ -60,16 +60,16 @@ void loop()
 {
     switch (mode)
     {
-    case 0:
+    case FFT_MODE:
         fft();
         break;
-    case 1:
+    case ENVELOPE_MODE:
         envelope();
         break;
-    case 2:
+    case TICK_MODE:
         tick();
         break;
-    case 3:
+    case FADE_MODE:
         fade();
         break;
     }
