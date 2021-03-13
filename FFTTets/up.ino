@@ -5,12 +5,12 @@
 #define SAMPLING_FREQ 4300 // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AMPLITUDE 100      // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
-#define NOISE 200          // Used as a crude noise filter, values below this are ignored
+#define NOISE 400          // Used as a crude noise filter, values below this are ignored
 #define FFT_THRESHOLD 500
 
 //Envelope-Mode
-#define ENV_THRESHOLD 100
-#define NUM_VALS 50
+const int ENV_THRESHOLD = 50;
+#define NUM_VALS 20
 
 //Microphone pins
 #define AUDIO_IN_PIN A5 // Signal in on this pin
@@ -31,7 +31,7 @@
 int mode = 0;
 
 //Debug mode
-#define VERBOSE 0
+#define VERBOSE 1
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
@@ -84,11 +84,11 @@ void fft()
 
     if (bandValues[0] > FFT_THRESHOLD)
     {
-        setColor(0, 100, 0);
+        setColor(0, 0, 220);
     }
     else
     {
-        setColor(0, 5, 0);
+        setColor(0, 5, 7);
     }
 }
 
