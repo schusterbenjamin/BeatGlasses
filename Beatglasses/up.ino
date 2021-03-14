@@ -9,6 +9,7 @@
 #define FFT_THRESHOLD 750
 int current_hue = 0;
 
+
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
 #define NUM_VALS 20
@@ -83,6 +84,8 @@ void loop()
     }
 }
 
+int test = 0;
+
 void fft()
 {
     makeBands();
@@ -100,6 +103,7 @@ void fft()
     else
     {
         setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, DIMMING);
+
     }
 }
 
@@ -200,7 +204,7 @@ void setColorAndBrightness(uint16_t h, double s, double b)
 
     int rgb[3];
     hsv2rgb(h, s, brightness, rgb);
-
+  
     analogWrite(LED_RED, (int)(255 - (rgb[0])));
     analogWrite(LED_GREEN, (int)(255 - (rgb[1])));
     analogWrite(LED_BLUE, (int)(255 - (rgb[2])));
