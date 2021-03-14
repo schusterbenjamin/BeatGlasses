@@ -6,7 +6,7 @@
 #define AMPLITUDE 100      // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200          // Used as a crude noise filter, values below this are ignored
-#define FFT_THRESHOLD 650
+#define FFT_THRESHOLD 750
 
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
@@ -27,11 +27,11 @@ const int ENV_THRESHOLD = 50;
 #define MAX_COLOR_INPUT 6000
 #define COLOR_DIMMING 0.3
 
-#define MIN_BRIGHTNESS_VALUE 0.02
-#define MAX_BRIGHTNESS_VALUE 1
-#define BRIGHTNESS_DIMMING 0.4
+#define MIN_BRIGHTNESS_VALUE 5
+#define DIMMING 1337
+const int BRIGHTNESS_DIMMING = MAX_VALUE_VALUE / 6;
 
-//brightness shall allways be between MIN_BRIGHTNESS_VALUE and MAX_BRIGHTNESS_VALUE;
+//brightness shall allways be between MIN_BRIGHTNESS_VALUE and MAX_VALUE_VALUE;
 double brightness = MIN_BRIGHTNESS_VALUE;
 
 //Modes
@@ -43,11 +43,10 @@ double brightness = MIN_BRIGHTNESS_VALUE;
 int mode = FFT_MODE;
 
 //Debug mode
-#define VERBOSE 1
+#define VERBOSE 0
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
-int oldBarHeights[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int bandValues[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 double vReal[SAMPLES];
 double vImag[SAMPLES];
@@ -85,6 +84,8 @@ void loop()
     }
 }
 
+int test = 0;
+
 void fft()
 {
     makeBands();
@@ -93,11 +94,11 @@ void fft()
 
     if (val > FFT_THRESHOLD)
     {
-        setColorAndBrightness(0, 0, 255, MAX_BRIGHTNESS_VALUE);
+        setColorAndBrightness(24000, MAX_SATURATION_VALUE, MAX_VALUE_VALUE);
     }
     else
     {
-        setColorAndBrightness(0, 0, 255, NULL);
+        setColorAndBrightness(24000, MAX_SATURATION_VALUE, DIMMING);
     }
 }
 
@@ -126,7 +127,6 @@ void tick()
 void fade()
 {
 }
-
 void makeBands()
 {
     if (VERBOSE)
@@ -210,7 +210,7 @@ void makeBands()
                     bandValues[5] += (int)vReal[i];
                 if (i > 13 && i <= 18)
                     bandValues[6] += (int)vReal[i];
-                if (i > 18 && i <= MAX_BRIGHTNESS_VALUE)
+                if (i > 18 && i <= 25)
                     bandValues[7] += (int)vReal[i];
                 if (i > 25 && i <= 36)
                     bandValues[8] += (int)vReal[i];
@@ -233,11 +233,11 @@ void makeBands()
     }
 }
 
-void setColorAndBrightness(int r, int g, int b, int bn)
+void setColorAndBrightness(uint16_t h, double s, double b)
 {
-    if (bn != NULL)
+    if (b != DIMMING)
     {
-        brightness = bn;
+        brightness = b;
     }
     else
     {
@@ -246,7 +246,19 @@ void setColorAndBrightness(int r, int g, int b, int bn)
             brightness = MIN_BRIGHTNESS_VALUE;
     }
 
-    analogWrite(LED_RED, (int)(255 - (r * brightness)));
-    analogWrite(LED_GREEN, (int)(255 - (g * brightness)));
-    analogWrite(LED_BLUE, (int)(255 - (b * brightness)));
+    int rgb[3];
+    hsv2rgb(h, s, brightness, rgb);
+
+    // Serial.print("brightness: ");
+    // Serial.println(brightness);
+
+    // Serial.print(rgb[0]);
+    // Serial.print(" ");
+    // Serial.print(rgb[1]);
+    // Serial.print(" ");
+    // Serial.println(rgb[2]);
+
+    analogWrite(LED_RED, (int)(255 - (rgb[0])));
+    analogWrite(LED_GREEN, (int)(255 - (rgb[1])));
+    analogWrite(LED_BLUE, (int)(255 - (rgb[2])));
 }
