@@ -7,11 +7,14 @@
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 100          // Used as a crude noise filter, values below this are ignored
 #define FFT_THRESHOLD 750
-int current_hue = 0;
 
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
 #define NUM_VALS 20
+
+//FADE-Mode
+#define COLOR_FADING_SPEED 30
+int BRIGHTNES_FADING_SPEED = 1;
 
 //Microphone pins
 #define AUDIO_IN_PIN A5 // Signal in on this pin
@@ -28,16 +31,17 @@ const int ENV_THRESHOLD = 50;
 #define DIMMING 1337
 const int BRIGHTNESS_DIMMING = MAX_VALUE_VALUE / 4;
 
-//brightness shall allways be between MIN_BRIGHTNESS_VALUE and MAX_VALUE_VALUE;
-double brightness = MIN_BRIGHTNESS_VALUE;
-
 //Modes
 #define FFT_MODE 0
 #define ENVELOPE_MODE 1
 #define TICK_MODE 2
 #define FADE_MODE 3
 
-int mode = FFT_MODE;
+int mode = FADE_MODE;
+
+//variables used in different modes
+double brightness = MIN_BRIGHTNESS_VALUE;
+int current_hue = 0;
 
 //Debug mode
 #define VERBOSE 0
@@ -112,6 +116,22 @@ void tick()
 }
 void fade()
 {
+
+    current_hue += COLOR_FADING_SPEED;
+    if (current_hue > MAX_HUE_VALUE)
+        current_hue = 0;
+
+    brightness += BRIGHTNES_FADING_SPEED;
+
+    if (brightness > MAX_VALUE_VALUE || brightness < 2)
+    {
+        BRIGHTNES_FADING_SPEED *= -1;
+        brightness += BRIGHTNES_FADING_SPEED;
+    }
+
+    setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, brightness);
+
+    delay(10);
 }
 
 void makeBands()
