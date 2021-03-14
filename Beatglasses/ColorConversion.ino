@@ -1,7 +1,7 @@
 
 #define MAX_HUE_VALUE 31000
 #define MAX_SATURATION_VALUE 255
-#define MAX_VALUE_VALUE 255
+#define MAX_BRIGHTNESS_VALUE 255
 
 void hsv2rgb(uint16_t h, uint32_t s, uint32_t v, int color[3])
 {

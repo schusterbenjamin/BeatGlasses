@@ -8,7 +8,6 @@
 #define NOISE 100          // Used as a crude noise filter, values below this are ignored
 #define FFT_THRESHOLD 750
 
-
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
 #define NUM_VALS 20
@@ -16,6 +15,10 @@ const int ENV_THRESHOLD = 50;
 //FADE-Mode
 #define COLOR_FADING_SPEED 30
 int BRIGHTNES_FADING_SPEED = 1;
+
+//TICK-Mode
+#define TICK_COLOR_HUE 24000
+#define TICK_SPEED 12 //times per second
 
 //Microphone pins
 #define AUDIO_IN_PIN A5 // Signal in on this pin
@@ -30,7 +33,7 @@ int BRIGHTNES_FADING_SPEED = 1;
 
 #define MIN_BRIGHTNESS_VALUE 10
 #define DIMMING 1337
-const int BRIGHTNESS_DIMMING = MAX_VALUE_VALUE / 4;
+const int BRIGHTNESS_DIMMING = MAX_BRIGHTNESS_VALUE / 4;
 
 //Modes
 #define FFT_MODE 0
@@ -38,7 +41,7 @@ const int BRIGHTNESS_DIMMING = MAX_VALUE_VALUE / 4;
 #define TICK_MODE 2
 #define FADE_MODE 3
 
-int mode = FADE_MODE;
+int mode = TICK_MODE;
 
 //variables used in different modes
 double brightness = MIN_BRIGHTNESS_VALUE;
@@ -102,12 +105,11 @@ void fft()
 
     if (val > FFT_THRESHOLD)
     {
-        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, MAX_VALUE_VALUE);
+        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, MAX_BRIGHTNESS_VALUE);
     }
     else
     {
         setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, DIMMING);
-
     }
 }
 
@@ -117,6 +119,13 @@ void envelope()
 
 void tick()
 {
+    delay(1000 / TICK_SPEED);
+
+    setColorAndBrightness(TICK_COLOR_HUE, MAX_SATURATION_VALUE, MAX_BRIGHTNESS_VALUE);
+
+    delay(1000 / TICK_SPEED);
+
+    setColorAndBrightness(TICK_COLOR_HUE, MAX_SATURATION_VALUE, MIN_BRIGHTNESS_VALUE);
 }
 void fade()
 {
@@ -127,7 +136,7 @@ void fade()
 
     brightness += BRIGHTNES_FADING_SPEED;
 
-    if (brightness > MAX_VALUE_VALUE || brightness < 2)
+    if (brightness > MAX_BRIGHTNESS_VALUE || brightness < 2)
     {
         BRIGHTNES_FADING_SPEED *= -1;
         brightness += BRIGHTNES_FADING_SPEED;
@@ -224,7 +233,7 @@ void setColorAndBrightness(uint16_t h, double s, double b)
 
     int rgb[3];
     hsv2rgb(h, s, brightness, rgb);
-  
+
     analogWrite(LED_RED, (int)(255 - (rgb[0])));
     analogWrite(LED_GREEN, (int)(255 - (rgb[1])));
     analogWrite(LED_BLUE, (int)(255 - (rgb[2])));
