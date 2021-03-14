@@ -115,6 +115,7 @@ void tick()
 void fade()
 {
 }
+
 void makeBands()
 {
     if (VERBOSE)
