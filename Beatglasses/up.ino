@@ -41,7 +41,7 @@ const int BRIGHTNESS_DIMMING = MAX_BRIGHTNESS_VALUE / 4;
 #define TICK_MODE 2
 #define FADE_MODE 3
 
-int mode = TICK_MODE;
+int mode = FFT_MODE;
 
 //variables used in different modes
 double brightness = MIN_BRIGHTNESS_VALUE;

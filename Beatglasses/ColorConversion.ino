@@ -1,5 +1,5 @@
 
-#define MAX_HUE_VALUE 31000
+#define MAX_HUE_VALUE 36000
 #define MAX_SATURATION_VALUE 255
 #define MAX_BRIGHTNESS_VALUE 255
 
@@ -7,7 +7,7 @@ void hsv2rgb(uint16_t h, uint32_t s, uint32_t v, int color[3])
 {
 
     if (h >= MAX_HUE_VALUE)
-        h = MAX_HUE_VALUE;
+        h -= MAX_HUE_VALUE;
     int16_t ph = h / 6;
     ph = ph % 2000;
     ph -= 1000;
