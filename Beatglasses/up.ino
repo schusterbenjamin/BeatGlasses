@@ -7,7 +7,7 @@
 #define NUM_BANDS 8        // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 100          // Used as a crude noise filter, values below this are ignored
 #define FFT_THRESHOLD 750
-#define MAX_HISTORY 30
+int current_hue = 0;
 
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
@@ -83,25 +83,23 @@ void loop()
     }
 }
 
-int test = 24000;
-
 void fft()
 {
     makeBands();
 
     int val = bandValues[0];
 
-    test += 50;
-    if (test > MAX_HUE_VALUE)
-        test = 0;
+    current_hue += 50;
+    if (current_hue > MAX_HUE_VALUE)
+        current_hue = 0;
 
     if (val > FFT_THRESHOLD)
     {
-        setColorAndBrightness(test, MAX_SATURATION_VALUE, MAX_VALUE_VALUE);
+        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, MAX_VALUE_VALUE);
     }
     else
     {
-        setColorAndBrightness(test, MAX_SATURATION_VALUE, DIMMING);
+        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, DIMMING);
     }
 }
 
