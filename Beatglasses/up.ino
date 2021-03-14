@@ -8,6 +8,7 @@
 #define NOISE 200          // Used as a crude noise filter, values below this are ignored
 #define FFT_THRESHOLD 750
 
+
 //Envelope-Mode
 const int ENV_THRESHOLD = 50;
 #define NUM_VALS 20
@@ -127,6 +128,7 @@ void tick()
 void fade()
 {
 }
+
 void makeBands()
 {
     if (VERBOSE)
@@ -210,7 +212,7 @@ void makeBands()
                     bandValues[5] += (int)vReal[i];
                 if (i > 13 && i <= 18)
                     bandValues[6] += (int)vReal[i];
-                if (i > 18 && i <= 25)
+                if (i > 18 && i <= MAX_BRIGHTNESS_VALUE)
                     bandValues[7] += (int)vReal[i];
                 if (i > 25 && i <= 36)
                     bandValues[8] += (int)vReal[i];
@@ -238,6 +240,7 @@ void setColorAndBrightness(uint16_t h, double s, double b)
     if (b != DIMMING)
     {
         brightness = b;
+
     }
     else
     {
