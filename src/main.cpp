@@ -57,7 +57,7 @@ const int BRIGHTNESS_DIMMING = MAX_BRIGHTNESS_VALUE / 4;
 static int BUTTON_PRESSED = 0;
 static int BUTTON_PRESSED_OLD = 0;
 
-int mode = FFT_MODE;
+int mode = ENVELOPE_MODE;
 
 //variables used in different modes
 double brightness = MIN_BRIGHTNESS_VALUE;
@@ -166,6 +166,18 @@ void fft()
 
 void envelope()
 {
+    Serial.println(analogRead(ENVELOPE_IN_PIN));
+
+    int val = analogRead(ENVELOPE_IN_PIN);
+
+    if (val > ENV_THRESHOLD)
+    {
+        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, MAX_BRIGHTNESS_VALUE);
+    }
+    else
+    {
+        setColorAndBrightness(current_hue, MAX_SATURATION_VALUE, DIMMING);
+    }
 }
 
 void tick()
