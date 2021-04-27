@@ -53,8 +53,11 @@ const int BRIGHTNESS_DIMMING = MAX_BRIGHTNESS_VALUE / 4;
 #define ENVELOPE_MODE 1
 #define TICK_MODE 2
 #define FADE_MODE 3
+#define BUTTON_IN 34
+static int BUTTON_PRESSED = 0;
+static int BUTTON_PRESSED_OLD = 0;
 
-int mode = FFT_MODE;
+int mode = TICK_MODE;
 
 //variables used in different modes
 double brightness = MIN_BRIGHTNESS_VALUE;
@@ -86,6 +89,7 @@ void setup()
   pinMode(AUDIO_IN_PIN, INPUT);
   pinMode(ENVELOPE_IN_PIN, INPUT);
   pinMode(GATE_IN_PIN, INPUT);
+  pinMode(BUTTON_IN, INPUT);
 
   Serial.begin(9600);
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQ));
@@ -94,6 +98,30 @@ void setup()
 void loop()
 {
   digitalWrite(LED_POWER, HIGH);
+
+  BUTTON_PRESSED = digitalRead(BUTTON_IN);
+
+  if (BUTTON_PRESSED_OLD == 1 && BUTTON_PRESSED == 0)
+  {
+    switch (mode)
+    {
+    case FFT_MODE:
+      mode = ENVELOPE_MODE;
+      break;
+    case ENVELOPE_MODE:
+      mode = TICK_MODE;
+      break;
+    case TICK_MODE:
+      mode = FADE_MODE;
+      break;
+    case FADE_MODE:
+      mode = FFT_MODE;
+      break;
+    }
+  }
+
+  BUTTON_PRESSED_OLD = BUTTON_PRESSED;
+
   switch (mode)
   {
   case FFT_MODE:
